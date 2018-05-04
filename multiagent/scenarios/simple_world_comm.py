@@ -226,10 +226,13 @@ class Scenario(BaseScenario):
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
         entity_pos = []
+
+        # gather distance from agent to all landmark entities
         for entity in world.landmarks:  # world.entities:
             if not entity.boundary:
                 entity_pos.append(entity.state.p_pos - agent.state.p_pos)
 
+        # check if agent is colliding with a forest (is within a forest)
         in_forest = [np.array([-1]), np.array([-1])]
         inf1 = False
         inf2 = False
@@ -240,10 +243,12 @@ class Scenario(BaseScenario):
             in_forest[1] = np.array([1])
             inf2 = True
 
+        # gather distance from agent to all foods
         food_pos = []
         for entity in world.food:  # world.entities:
             if not entity.boundary:
                 food_pos.append(entity.state.p_pos - agent.state.p_pos)
+
         # communication of all other agents
         comm = []
         other_pos = []

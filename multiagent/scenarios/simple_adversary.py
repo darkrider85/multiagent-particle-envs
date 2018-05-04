@@ -111,9 +111,11 @@ class Scenario(BaseScenario):
         # Rewarded based on proximity to the goal landmark
         shaped_reward = True
         if shaped_reward:  # distance-based reward
+            # the closer the adversary to the goal, the less negative the reward
             return -np.sum(np.square(agent.state.p_pos - agent.goal_a.state.p_pos))
         else:  # proximity-based reward (binary)
             adv_rew = 0
+            # gets a constant reward if the adversary is within a specific range of the goal
             if np.sqrt(np.sum(np.square(agent.state.p_pos - agent.goal_a.state.p_pos))) < 2 * agent.goal_a.size:
                 adv_rew += 5
             return adv_rew
@@ -122,6 +124,7 @@ class Scenario(BaseScenario):
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
         entity_pos = []
+        # get all distances from the agent's pos to landmarks
         for entity in world.landmarks:
             entity_pos.append(entity.state.p_pos - agent.state.p_pos)
         # entity colors
@@ -129,11 +132,14 @@ class Scenario(BaseScenario):
         for entity in world.landmarks:
             entity_color.append(entity.color)
         # communication of all other agents
+        # get the distances of the agent to all other agents
         other_pos = []
         for other in world.agents:
             if other is agent: continue
             other_pos.append(other.state.p_pos - agent.state.p_pos)
 
+        # if it is an adversary we return the distances to the landmarks and the distances to the other agents
+        # if it is not an adversary we return additionaly the distance to the agent's goal state
         if not agent.adversary:
             return np.concatenate([agent.goal_a.state.p_pos - agent.state.p_pos] + entity_pos + other_pos)
         else:
